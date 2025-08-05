@@ -1,0 +1,47 @@
+# Nama workflow yang akan muncul di tab Actions
+name: Build macOS Application
+
+# Kapan workflow ini akan berjalan
+on:
+  # Berjalan otomatis setiap kali ada update (push) ke branch "main"
+  push:
+    branches: [ "main" ]
+  # Memungkinkan Anda menjalankan workflow ini secara manual dari tab Actions
+  workflow_dispatch:
+
+# Daftar pekerjaan yang akan dilakukan
+jobs:
+  build:
+    # Penting: Memberitahu GitHub untuk menggunakan server macOS terbaru
+    runs-on: macos-latest
+
+    # Langkah-langkah yang akan dijalankan di server macOS
+    steps:
+    # Langkah 1: Mengunduh kode dari repository Anda ke server
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Langkah 2: Menyiapkan lingkungan Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' # Versi Python yang digunakan
+
+    # Langkah 3: Menginstal semua library yang dibutuhkan
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    # Langkah 4: Menjalankan PyInstaller untuk membuat aplikasi .app
+    - name: Run PyInstaller
+      run: |
+        pyinstaller --onefile --windowed --name "Aplikasi Perbandingan Excel" app.py
+
+    # Langkah 5: Mengunggah hasil .app sebagai "artifact" agar bisa diunduh
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-app
+        path: dist/Aplikasi Perbandingan Excel.app
